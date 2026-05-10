@@ -947,6 +947,26 @@ export default function TowerDefenseGame() {
         * { box-sizing: border-box; }
         .h-orbitron { font-family: 'Orbitron', sans-serif; }
 
+        /* --- Force Landscape Prompt --- */
+        @media screen and (orientation: portrait) and (max-width: 1024px) {
+          .landscape-warning { display: flex !important; }
+          .game-root-container { display: none !important; }
+        }
+        
+        .landscape-warning {
+          display: none;
+          position: fixed;
+          inset: 0;
+          background: #1e272e;
+          color: #00d2d3;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          z-index: 9999;
+          text-align: center;
+          padding: 20px;
+        }
+
         /* --- Responsive Menu Styles --- */
         .menu-container {
           display: flex;
@@ -1010,843 +1030,913 @@ export default function TowerDefenseGame() {
         }
       `}</style>
 
-      {appView === "menu" ? (
-        <div className="menu-container">
-          <h1 className="h-orbitron menu-title">SOFTY DEFENDERS</h1>
-          <p className="menu-subtitle">Select a tactical insertion zone.</p>
-          <div className="menu-grid">
-            {LEVELS.map((_, i) => (
-              <button key={i} className="zone-btn" onClick={() => startGame(i)}>
-                Zone {i + 1}
-              </button>
-            ))}
-          </div>
-        </div>
-      ) : (
-        <div
-          style={{
-            width: "100vw",
-            height: "100vh",
-            display: "flex",
-            flexDirection: "column",
-            padding: "12px",
-            maxWidth: "1200px",
-            margin: "0 auto",
-          }}
+      {/* Landscape Warning View */}
+      <div className="landscape-warning h-orbitron">
+        <svg
+          width="60"
+          height="60"
+          viewBox="0 0 24 24"
+          fill="currentColor"
+          style={{ marginBottom: "20px" }}
         >
-          <div style={{ display: "flex", gap: "16px", marginBottom: "12px" }}>
-            <div
-              style={{
-                display: "flex",
-                flex: 1,
-                justifyContent: "space-between",
-                alignItems: "center",
-                backgroundColor: "#2d3436",
-                padding: "12px 20px",
-                borderRadius: "12px",
-                color: "#fff",
-                fontWeight: "800",
-                boxShadow: "0 8px 24px rgba(0,0,0,0.3)",
-              }}
-            >
-              <div
-                style={{ display: "flex", alignItems: "center", gap: "24px" }}
-              >
-                <div
-                  className="h-orbitron"
-                  style={{ color: "#00d2d3", fontSize: "1.4rem" }}
-                >
-                  ZONE {activeLevelId + 1}
-                </div>
-                {/* --- SVG Heart Icon --- */}
-                <div
-                  style={{ display: "flex", gap: "8px", alignItems: "center" }}
-                >
-                  <svg
-                    width="22"
-                    height="22"
-                    viewBox="0 0 24 24"
-                    fill="#ff4757"
-                  >
-                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-                  </svg>
-                  <span style={{ color: "#ff4757", fontSize: "1.2rem" }}>
-                    {stateRef.current.baseHp}
-                  </span>
-                </div>
+          <path d="M23.37 7.66L16.34.63a2 2 0 00-2.83 0L.63 13.51a2 2 0 000 2.83l7.03 7.03a2 2 0 002.83 0L23.37 10.5a2 2 0 000-2.84zM12 18a6 6 0 110-12 6 6 0 010 12z" />
+        </svg>
+        <h2 style={{ fontSize: "1.5rem", marginBottom: "10px" }}>
+          ROTATE DEVICE
+        </h2>
+        <p style={{ color: "#808e9b", fontSize: "0.9rem" }}>
+          Command interface requires landscape orientation.
+        </p>
+      </div>
 
-                {/* --- SVG Coin/Money Icon --- */}
-                <div
-                  style={{ display: "flex", gap: "8px", alignItems: "center" }}
-                >
-                  <svg
-                    width="22"
-                    height="22"
-                    viewBox="0 0 24 24"
-                    fill="#f1c40f"
-                  >
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h-1c-.55 0-1-.45-1-1v-3c0-.55.45-1 1-1h3v-1H9V7h2V5h2v2h1c.55 0 1 .45 1 1v3c0 .55-.45 1-1 1h-3v1h3c.55 0 1 .45 1 1v3z" />
-                  </svg>
-                  <span style={{ color: "#f1c40f", fontSize: "1.2rem" }}>
-                    {stateRef.current.money}
-                  </span>
-                </div>
-              </div>
-              <div
-                style={{ display: "flex", alignItems: "center", gap: "24px" }}
-              >
-                <div className="h-orbitron" style={{ color: "#b2bec3" }}>
-                  WAVE {stateRef.current.wave}/10
-                </div>
+      <div className="game-root-container">
+        {appView === "menu" ? (
+          <div className="menu-container">
+            <h1 className="h-orbitron menu-title">SOFTY DEFENDERS</h1>
+            <p className="menu-subtitle">Select a tactical insertion zone.</p>
+            <div className="menu-grid">
+              {LEVELS.map((_, i) => (
                 <button
-                  onClick={startNextWave}
-                  disabled={
-                    stateRef.current.creeps.length > 0 ||
-                    stateRef.current.gameOver ||
-                    stateRef.current.gameWon
-                  }
-                  style={{
-                    padding: "10px 24px",
-                    backgroundColor:
-                      stateRef.current.creeps.length > 0 ||
-                      stateRef.current.gameOver ||
-                      stateRef.current.gameWon
-                        ? "#636e72"
-                        : "#00b894",
-                    color: "white",
-                    border: "none",
-                    borderRadius: "6px",
-                    cursor:
-                      stateRef.current.creeps.length > 0 ||
-                      stateRef.current.gameOver ||
-                      stateRef.current.gameWon
-                        ? "not-allowed"
-                        : "pointer",
-                    fontWeight: "bold",
-                    fontFamily: "inherit",
-                    textTransform: "uppercase",
-                    transition: "all 0.1s",
-                  }}
+                  key={i}
+                  className="zone-btn"
+                  onClick={() => startGame(i)}
                 >
-                  {stateRef.current.wave === 0 ? "INITIATE" : "NEXT WAVE"}
+                  Zone {i + 1}
                 </button>
-              </div>
+              ))}
             </div>
-            <button
-              onClick={handleRetreat}
-              style={{
-                padding: "12px 20px",
-                backgroundColor: "#d63031",
-                color: "#fff",
-                border: "none",
-                borderRadius: "12px",
-                cursor: "pointer",
-                fontWeight: "bold",
-                fontFamily: "inherit",
-                textTransform: "uppercase",
-                boxShadow: "0 8px 24px rgba(0,0,0,0.3)",
-              }}
-            >
-              RETREAT
-            </button>
           </div>
-
+        ) : (
           <div
             style={{
-              position: "relative",
-              flex: 1,
-              borderRadius: "16px",
-              backgroundColor: "#2d3436",
-              overflow: "hidden",
+              width: "100vw",
+              height: "100vh",
               display: "flex",
-              boxShadow:
-                "inset 0 4px 30px rgba(0,0,0,0.5), 0 10px 30px rgba(0,0,0,0.5)",
+              flexDirection: "column",
+              padding: "12px",
+              maxWidth: "1200px",
+              margin: "0 auto",
             }}
           >
-            {stateRef.current.gameOver && (
+            <div style={{ display: "flex", gap: "16px", marginBottom: "12px" }}>
               <div
                 style={{
-                  position: "absolute",
-                  inset: 0,
-                  backgroundColor: "rgba(0,0,0, 0.85)",
-                  color: "#ff4757",
                   display: "flex",
-                  flexDirection: "column",
+                  flex: 1,
+                  justifyContent: "space-between",
                   alignItems: "center",
-                  justifyContent: "center",
-                  zIndex: 10,
+                  backgroundColor: "#2d3436",
+                  padding: "12px 20px",
+                  borderRadius: "12px",
+                  color: "#fff",
+                  fontWeight: "800",
+                  boxShadow: "0 8px 24px rgba(0,0,0,0.3)",
                 }}
               >
-                <h1
-                  className="h-orbitron"
-                  style={{
-                    margin: "0 0 10px 0",
-                    fontSize: "5rem",
-                    textShadow: "0 0 30px rgba(255, 71, 87, 0.6)",
-                  }}
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: "24px" }}
                 >
-                  CRITICAL FAILURE
-                </h1>
-                <p style={{ color: "#fff", fontSize: "1.5rem" }}>
-                  Base structure compromised.
-                </p>
-              </div>
-            )}
-            {stateRef.current.gameWon && (
-              <div
-                style={{
-                  position: "absolute",
-                  inset: 0,
-                  backgroundColor: "rgba(0,0,0, 0.85)",
-                  color: "#00b894",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  zIndex: 10,
-                }}
-              >
-                <h1
-                  className="h-orbitron"
-                  style={{
-                    margin: "0 0 10px 0",
-                    fontSize: "5rem",
-                    textShadow: "0 0 30px rgba(0, 184, 148, 0.6)",
-                  }}
-                >
-                  SECTOR SECURED
-                </h1>
-                <p style={{ color: "#fff", fontSize: "1.5rem" }}>
-                  Hostiles eliminated.
-                </p>
-              </div>
-            )}
-
-            <svg
-              viewBox={`0 0 ${GAME_WIDTH} ${GAME_HEIGHT}`}
-              width="100%"
-              height="100%"
-              preserveAspectRatio="xMidYMid meet"
-              style={{ display: "block" }}
-            >
-              <defs>
-                <filter
-                  id="drop-shadow"
-                  x="-30%"
-                  y="-30%"
-                  width="160%"
-                  height="160%"
-                >
-                  <feDropShadow
-                    dx="0"
-                    dy="6"
-                    stdDeviation="4"
-                    floodColor="#000"
-                    floodOpacity="0.4"
-                  />
-                </filter>
-                <filter id="blur">
-                  <feGaussianBlur stdDeviation="3" />
-                </filter>
-                <filter
-                  id="glow-yellow"
-                  x="-50%"
-                  y="-50%"
-                  width="200%"
-                  height="200%"
-                >
-                  <feGaussianBlur stdDeviation="2.5" result="coloredBlur" />
-                  <feMerge>
-                    <feMergeNode in="coloredBlur" />
-                    <feMergeNode in="SourceGraphic" />
-                  </feMerge>
-                </filter>
-                <filter
-                  id="glow-green"
-                  x="-50%"
-                  y="-50%"
-                  width="200%"
-                  height="200%"
-                >
-                  <feGaussianBlur stdDeviation="4" result="coloredBlur" />
-                  <feMerge>
-                    <feMergeNode in="coloredBlur" />
-                    <feMergeNode in="SourceGraphic" />
-                  </feMerge>
-                </filter>
-                <filter
-                  id="glow-blue"
-                  x="-50%"
-                  y="-50%"
-                  width="200%"
-                  height="200%"
-                >
-                  <feGaussianBlur stdDeviation="4" result="coloredBlur" />
-                  <feMerge>
-                    <feMergeNode in="coloredBlur" />
-                    <feMergeNode in="SourceGraphic" />
-                  </feMerge>
-                </filter>
-
-                {/* Gradients */}
-                <linearGradient id="metalBase" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0%" stopColor="#7f8c8d" />
-                  <stop offset="100%" stopColor="#2c3e50" />
-                </linearGradient>
-                <linearGradient id="metalBody" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#95a5a6" />
-                  <stop offset="100%" stopColor="#34495e" />
-                </linearGradient>
-                <linearGradient id="gunmetal" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#576574" />
-                  <stop offset="100%" stopColor="#222f3e" />
-                </linearGradient>
-                <radialGradient id="gooGrad" cx="30%" cy="30%" r="70%">
-                  <stop offset="0%" stopColor="#55efc4" />
-                  <stop offset="80%" stopColor="#00b894" />
-                  <stop offset="100%" stopColor="#019074" />
-                </radialGradient>
-                <radialGradient id="glassFlare" cx="30%" cy="30%" r="70%">
-                  <stop offset="0%" stopColor="rgba(255,255,255,0.8)" />
-                  <stop offset="40%" stopColor="rgba(255,255,255,0.1)" />
-                  <stop offset="100%" stopColor="rgba(255,255,255,0)" />
-                </radialGradient>
-                <linearGradient id="militaryGreen" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0%" stopColor="#4A6040" />
-                  <stop offset="100%" stopColor="#2D3A27" />
-                </linearGradient>
-                <radialGradient id="plasmaGrad" cx="50%" cy="50%" r="50%">
-                  <stop offset="0%" stopColor="#fff" />
-                  <stop offset="50%" stopColor="#00d2d3" />
-                  <stop offset="100%" stopColor="#0984e3" />
-                </radialGradient>
-                <radialGradient id="goldGrad" cx="30%" cy="30%" r="70%">
-                  <stop offset="0%" stopColor="#ffeaa7" />
-                  <stop offset="100%" stopColor="#fdcb6e" />
-                </radialGradient>
-
-                <pattern
-                  id="realisticGrass"
-                  width="80"
-                  height="80"
-                  patternUnits="userSpaceOnUse"
-                >
-                  <rect width="80" height="80" fill="#203a27" />
-                  <path
-                    d="M 10 70 Q 20 40 30 70 M 50 20 Q 60 -10 70 20 M 60 60 Q 70 40 80 60"
-                    fill="none"
-                    stroke="#2c5137"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                  />
-                  <circle cx="20" cy="20" r="1.5" fill="#182e1e" />
-                  <circle cx="60" cy="70" r="1.5" fill="#182e1e" />
-                  <circle cx="40" cy="40" r="2" fill="#182e1e" opacity="0.5" />
-                </pattern>
-
-                <pattern
-                  id="dirtPath"
-                  width="40"
-                  height="40"
-                  patternUnits="userSpaceOnUse"
-                >
-                  <rect width="40" height="40" fill="#4b3e31" />
-                  <circle cx="10" cy="10" r="1" fill="#2d241c" opacity="0.6" />
-                  <circle
-                    cx="30"
-                    cy="25"
-                    r="1.5"
-                    fill="#2d241c"
-                    opacity="0.4"
-                  />
-                  <circle cx="15" cy="35" r="2" fill="#2d241c" opacity="0.5" />
-                </pattern>
-              </defs>
-
-              <rect width="100%" height="100%" fill="url(#realisticGrass)" />
-
-              {/* Realistic Path Rendering */}
-              {/* Shadow Base */}
-              <path
-                d={activePath
-                  .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`)
-                  .join(" ")}
-                fill="none"
-                stroke="rgba(0,0,0,0.4)"
-                strokeWidth="64"
-                strokeLinecap="square"
-                strokeLinejoin="miter"
-                filter="url(#blur)"
-                transform="translate(0, 4)"
-              />
-              {/* Outer Border */}
-              <path
-                d={activePath
-                  .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`)
-                  .join(" ")}
-                fill="none"
-                stroke="#2d241c"
-                strokeWidth="60"
-                strokeLinecap="square"
-                strokeLinejoin="miter"
-              />
-              {/* Inner Dirt Texture */}
-              <path
-                d={activePath
-                  .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`)
-                  .join(" ")}
-                fill="none"
-                stroke="url(#dirtPath)"
-                strokeWidth="54"
-                strokeLinecap="square"
-                strokeLinejoin="miter"
-              />
-              {/* Center Line Guides */}
-              <path
-                d={activePath
-                  .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`)
-                  .join(" ")}
-                fill="none"
-                stroke="rgba(255,255,255,0.15)"
-                strokeWidth="2"
-                strokeLinecap="square"
-                strokeLinejoin="miter"
-                strokeDasharray="12, 12"
-              />
-
-              {/* Directional Arrows placed midway on each path segment */}
-              {activePath.slice(0, -1).map((p1, i) => {
-                const p2 = activePath[i + 1];
-                const cx = (p1.x + p2.x) / 2;
-                const cy = (p1.y + p2.y) / 2;
-                const angle =
-                  Math.atan2(p2.y - p1.y, p2.x - p1.x) * (180 / Math.PI);
-                return (
-                  <g
-                    key={`arrow-${i}`}
-                    transform={`translate(${cx}, ${cy}) rotate(${angle})`}
+                  <div
+                    className="h-orbitron"
+                    style={{ color: "#00d2d3", fontSize: "1.4rem" }}
                   >
-                    <path
-                      d="M -12 -10 L 8 0 L -12 10 Z"
-                      fill="#fff"
-                      opacity="0.1"
-                    />
-                  </g>
-                );
-              })}
+                    ZONE {activeLevelId + 1}
+                  </div>
+                  {/* --- SVG Heart Icon --- */}
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: "8px",
+                      alignItems: "center",
+                    }}
+                  >
+                    <svg
+                      width="22"
+                      height="22"
+                      viewBox="0 0 24 24"
+                      fill="#ff4757"
+                    >
+                      <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                    </svg>
+                    <span style={{ color: "#ff4757", fontSize: "1.2rem" }}>
+                      {stateRef.current.baseHp}
+                    </span>
+                  </div>
 
-              {activeSelectedTower && (
-                <circle
-                  cx={activeSelectedTower.x}
-                  cy={activeSelectedTower.y}
-                  r={activeSelectedTower.range}
-                  fill="rgba(0, 210, 211, 0.05)"
-                  stroke="#00d2d3"
-                  strokeWidth="2"
-                  strokeDasharray="6,6"
-                />
+                  {/* --- SVG Coin/Money Icon --- */}
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: "8px",
+                      alignItems: "center",
+                    }}
+                  >
+                    <svg
+                      width="22"
+                      height="22"
+                      viewBox="0 0 24 24"
+                      fill="#f1c40f"
+                    >
+                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h-1c-.55 0-1-.45-1-1v-3c0-.55.45-1 1-1h3v-1H9V7h2V5h2v2h1c.55 0 1 .45 1 1v3c0 .55-.45 1-1 1h-3v1h3c.55 0 1 .45 1 1v3z" />
+                    </svg>
+                    <span style={{ color: "#f1c40f", fontSize: "1.2rem" }}>
+                      {stateRef.current.money}
+                    </span>
+                  </div>
+                </div>
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: "24px" }}
+                >
+                  <div className="h-orbitron" style={{ color: "#b2bec3" }}>
+                    WAVE {stateRef.current.wave}/10
+                  </div>
+                  <button
+                    onClick={startNextWave}
+                    disabled={
+                      stateRef.current.creeps.length > 0 ||
+                      stateRef.current.gameOver ||
+                      stateRef.current.gameWon
+                    }
+                    style={{
+                      padding: "10px 24px",
+                      backgroundColor:
+                        stateRef.current.creeps.length > 0 ||
+                        stateRef.current.gameOver ||
+                        stateRef.current.gameWon
+                          ? "#636e72"
+                          : "#00b894",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "6px",
+                      cursor:
+                        stateRef.current.creeps.length > 0 ||
+                        stateRef.current.gameOver ||
+                        stateRef.current.gameWon
+                          ? "not-allowed"
+                          : "pointer",
+                      fontWeight: "bold",
+                      fontFamily: "inherit",
+                      textTransform: "uppercase",
+                      transition: "all 0.1s",
+                    }}
+                  >
+                    {stateRef.current.wave === 0 ? "INITIATE" : "NEXT WAVE"}
+                  </button>
+                </div>
+              </div>
+              <button
+                onClick={handleRetreat}
+                style={{
+                  padding: "12px 20px",
+                  backgroundColor: "#d63031",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "12px",
+                  cursor: "pointer",
+                  fontWeight: "bold",
+                  fontFamily: "inherit",
+                  textTransform: "uppercase",
+                  boxShadow: "0 8px 24px rgba(0,0,0,0.3)",
+                }}
+              >
+                RETREAT
+              </button>
+            </div>
+
+            <div
+              style={{
+                position: "relative",
+                flex: 1,
+                borderRadius: "16px",
+                backgroundColor: "#2d3436",
+                overflow: "hidden",
+                display: "flex",
+                boxShadow:
+                  "inset 0 4px 30px rgba(0,0,0,0.5), 0 10px 30px rgba(0,0,0,0.5)",
+              }}
+            >
+              {stateRef.current.gameOver && (
+                <div
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    backgroundColor: "rgba(0,0,0, 0.85)",
+                    color: "#ff4757",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    zIndex: 10,
+                  }}
+                >
+                  <h1
+                    className="h-orbitron"
+                    style={{
+                      margin: "0 0 10px 0",
+                      fontSize: "5rem",
+                      textShadow: "0 0 30px rgba(255, 71, 87, 0.6)",
+                    }}
+                  >
+                    CRITICAL FAILURE
+                  </h1>
+                  <p style={{ color: "#fff", fontSize: "1.5rem" }}>
+                    Base structure compromised.
+                  </p>
+                </div>
+              )}
+              {stateRef.current.gameWon && (
+                <div
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    backgroundColor: "rgba(0,0,0, 0.85)",
+                    color: "#00b894",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    zIndex: 10,
+                  }}
+                >
+                  <h1
+                    className="h-orbitron"
+                    style={{
+                      margin: "0 0 10px 0",
+                      fontSize: "5rem",
+                      textShadow: "0 0 30px rgba(0, 184, 148, 0.6)",
+                    }}
+                  >
+                    SECTOR SECURED
+                  </h1>
+                  <p style={{ color: "#fff", fontSize: "1.5rem" }}>
+                    Hostiles eliminated.
+                  </p>
+                </div>
               )}
 
-              {/* Build Slots Visuals */}
-              {activeSlots.map((slot) => {
-                const hasTower = stateRef.current.towers.some(
-                  (t) =>
-                    Math.abs(t.x - slot.x) < 5 && Math.abs(t.y - slot.y) < 5,
-                );
-                if (hasTower) return null;
-                return (
-                  <g key={`slot-${slot.x}-${slot.y}`}>
-                    <rect
-                      x={slot.x - SLOT_SIZE / 2}
-                      y={slot.y - SLOT_SIZE / 2}
-                      width={SLOT_SIZE}
-                      height={SLOT_SIZE}
-                      fill="rgba(0,0,0,0.3)"
-                      rx="6"
+              <svg
+                viewBox={`0 0 ${GAME_WIDTH} ${GAME_HEIGHT}`}
+                width="100%"
+                height="100%"
+                preserveAspectRatio="xMidYMid meet"
+                style={{ display: "block" }}
+              >
+                <defs>
+                  <filter
+                    id="drop-shadow"
+                    x="-30%"
+                    y="-30%"
+                    width="160%"
+                    height="160%"
+                  >
+                    <feDropShadow
+                      dx="0"
+                      dy="6"
+                      stdDeviation="4"
+                      floodColor="#000"
+                      floodOpacity="0.4"
                     />
-                    <rect
-                      x={slot.x - SLOT_SIZE / 2}
-                      y={slot.y - SLOT_SIZE / 2}
-                      width={SLOT_SIZE}
-                      height={SLOT_SIZE}
-                      fill="none"
-                      stroke="#576574"
-                      strokeWidth="2"
-                      strokeDasharray="4, 4"
-                      rx="6"
-                    />
+                  </filter>
+                  <filter id="blur">
+                    <feGaussianBlur stdDeviation="3" />
+                  </filter>
+                  <filter
+                    id="glow-yellow"
+                    x="-50%"
+                    y="-50%"
+                    width="200%"
+                    height="200%"
+                  >
+                    <feGaussianBlur stdDeviation="2.5" result="coloredBlur" />
+                    <feMerge>
+                      <feMergeNode in="coloredBlur" />
+                      <feMergeNode in="SourceGraphic" />
+                    </feMerge>
+                  </filter>
+                  <filter
+                    id="glow-green"
+                    x="-50%"
+                    y="-50%"
+                    width="200%"
+                    height="200%"
+                  >
+                    <feGaussianBlur stdDeviation="4" result="coloredBlur" />
+                    <feMerge>
+                      <feMergeNode in="coloredBlur" />
+                      <feMergeNode in="SourceGraphic" />
+                    </feMerge>
+                  </filter>
+                  <filter
+                    id="glow-blue"
+                    x="-50%"
+                    y="-50%"
+                    width="200%"
+                    height="200%"
+                  >
+                    <feGaussianBlur stdDeviation="4" result="coloredBlur" />
+                    <feMerge>
+                      <feMergeNode in="coloredBlur" />
+                      <feMergeNode in="SourceGraphic" />
+                    </feMerge>
+                  </filter>
+
+                  {/* Gradients */}
+                  <linearGradient id="metalBase" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stopColor="#7f8c8d" />
+                    <stop offset="100%" stopColor="#2c3e50" />
+                  </linearGradient>
+                  <linearGradient id="metalBody" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#95a5a6" />
+                    <stop offset="100%" stopColor="#34495e" />
+                  </linearGradient>
+                  <linearGradient id="gunmetal" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#576574" />
+                    <stop offset="100%" stopColor="#222f3e" />
+                  </linearGradient>
+                  <radialGradient id="gooGrad" cx="30%" cy="30%" r="70%">
+                    <stop offset="0%" stopColor="#55efc4" />
+                    <stop offset="80%" stopColor="#00b894" />
+                    <stop offset="100%" stopColor="#019074" />
+                  </radialGradient>
+                  <radialGradient id="glassFlare" cx="30%" cy="30%" r="70%">
+                    <stop offset="0%" stopColor="rgba(255,255,255,0.8)" />
+                    <stop offset="40%" stopColor="rgba(255,255,255,0.1)" />
+                    <stop offset="100%" stopColor="rgba(255,255,255,0)" />
+                  </radialGradient>
+                  <linearGradient
+                    id="militaryGreen"
+                    x1="0"
+                    y1="0"
+                    x2="1"
+                    y2="1"
+                  >
+                    <stop offset="0%" stopColor="#4A6040" />
+                    <stop offset="100%" stopColor="#2D3A27" />
+                  </linearGradient>
+                  <radialGradient id="plasmaGrad" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stopColor="#fff" />
+                    <stop offset="50%" stopColor="#00d2d3" />
+                    <stop offset="100%" stopColor="#0984e3" />
+                  </radialGradient>
+                  <radialGradient id="goldGrad" cx="30%" cy="30%" r="70%">
+                    <stop offset="0%" stopColor="#ffeaa7" />
+                    <stop offset="100%" stopColor="#fdcb6e" />
+                  </radialGradient>
+
+                  <pattern
+                    id="realisticGrass"
+                    width="80"
+                    height="80"
+                    patternUnits="userSpaceOnUse"
+                  >
+                    <rect width="80" height="80" fill="#203a27" />
                     <path
-                      d={`M ${slot.x - 8} ${slot.y} L ${slot.x + 8} ${slot.y} M ${slot.x} ${slot.y - 8} L ${slot.x} ${slot.y + 8}`}
-                      stroke="#576574"
+                      d="M 10 70 Q 20 40 30 70 M 50 20 Q 60 -10 70 20 M 60 60 Q 70 40 80 60"
+                      fill="none"
+                      stroke="#2c5137"
                       strokeWidth="2"
+                      strokeLinecap="round"
+                    />
+                    <circle cx="20" cy="20" r="1.5" fill="#182e1e" />
+                    <circle cx="60" cy="70" r="1.5" fill="#182e1e" />
+                    <circle
+                      cx="40"
+                      cy="40"
+                      r="2"
+                      fill="#182e1e"
                       opacity="0.5"
                     />
-                  </g>
-                );
-              })}
+                  </pattern>
 
-              {stateRef.current.towers.map((tower) => (
-                <g key={tower.id} filter="url(#drop-shadow)">
-                  {renderTowerShape(tower)}
-                </g>
-              ))}
-
-              {stateRef.current.bullets.map((bullet) => (
-                <g key={bullet.id}>{renderBullet(bullet)}</g>
-              ))}
-
-              {/* Creeps (Redesigned as mechs) */}
-              {stateRef.current.creeps.map((creep) => {
-                const hpPercentage = Math.max(0, creep.hp / creep.maxHp);
-                const isSlowed = Date.now() < creep.slowUntil;
-                const size = creep.isBoss ? 1.5 : 1;
-
-                return (
-                  <g
-                    key={creep.id}
-                    transform={`translate(${creep.x}, ${creep.y}) scale(${size})`}
-                    filter="url(#drop-shadow)"
+                  <pattern
+                    id="dirtPath"
+                    width="40"
+                    height="40"
+                    patternUnits="userSpaceOnUse"
                   >
-                    {/* Shadow underneath rotation */}
-                    <ellipse
-                      cx="-2"
-                      cy="4"
-                      rx="14"
-                      ry="10"
-                      fill="rgba(0,0,0,0.4)"
-                      filter="url(#blur)"
+                    <rect width="40" height="40" fill="#4b3e31" />
+                    <circle
+                      cx="10"
+                      cy="10"
+                      r="1"
+                      fill="#2d241c"
+                      opacity="0.6"
                     />
+                    <circle
+                      cx="30"
+                      cy="25"
+                      r="1.5"
+                      fill="#2d241c"
+                      opacity="0.4"
+                    />
+                    <circle
+                      cx="15"
+                      cy="35"
+                      r="2"
+                      fill="#2d241c"
+                      opacity="0.5"
+                    />
+                  </pattern>
+                </defs>
 
-                    <g transform={`rotate(${creep.angle})`}>
-                      {/* Treads */}
-                      <rect
-                        x="-12"
-                        y="-12"
-                        width="24"
-                        height="6"
-                        fill="#2d3436"
-                        rx="2"
-                      />
-                      <rect
-                        x="-12"
-                        y="6"
-                        width="24"
-                        height="6"
-                        fill="#2d3436"
-                        rx="2"
-                      />
+                <rect width="100%" height="100%" fill="url(#realisticGrass)" />
 
-                      {/* Body */}
-                      <path
-                        d="M -10 -8 L 8 -8 L 14 0 L 8 8 L -10 8 Z"
-                        fill={creep.isBoss ? "#6c5ce7" : "#d63031"}
-                        stroke="#2d3436"
-                        strokeWidth="1.5"
-                      />
+                {/* Realistic Path Rendering */}
+                {/* Shadow Base */}
+                <path
+                  d={activePath
+                    .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`)
+                    .join(" ")}
+                  fill="none"
+                  stroke="rgba(0,0,0,0.4)"
+                  strokeWidth="64"
+                  strokeLinecap="square"
+                  strokeLinejoin="miter"
+                  filter="url(#blur)"
+                  transform="translate(0, 4)"
+                />
+                {/* Outer Border */}
+                <path
+                  d={activePath
+                    .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`)
+                    .join(" ")}
+                  fill="none"
+                  stroke="#2d241c"
+                  strokeWidth="60"
+                  strokeLinecap="square"
+                  strokeLinejoin="miter"
+                />
+                {/* Inner Dirt Texture */}
+                <path
+                  d={activePath
+                    .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`)
+                    .join(" ")}
+                  fill="none"
+                  stroke="url(#dirtPath)"
+                  strokeWidth="54"
+                  strokeLinecap="square"
+                  strokeLinejoin="miter"
+                />
+                {/* Center Line Guides */}
+                <path
+                  d={activePath
+                    .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`)
+                    .join(" ")}
+                  fill="none"
+                  stroke="rgba(255,255,255,0.15)"
+                  strokeWidth="2"
+                  strokeLinecap="square"
+                  strokeLinejoin="miter"
+                  strokeDasharray="12, 12"
+                />
 
-                      {/* Viewport / Eye */}
-                      <polygon
-                        points="4,-4 10,0 4,4"
-                        fill={isSlowed ? "#00d2d3" : "#f1c40f"}
-                        filter={
-                          isSlowed ? "url(#glow-blue)" : "url(#glow-yellow)"
-                        }
-                      />
-
-                      {/* Detail lines */}
-                      <line
-                        x1="-4"
-                        y1="-8"
-                        x2="-4"
-                        y2="8"
-                        stroke="#2d3436"
-                        strokeWidth="1.5"
-                      />
-                    </g>
-
-                    {/* Health Bar (Does not rotate with the mech) */}
-                    <g transform={`translate(0, ${creep.isBoss ? -22 : -18})`}>
-                      <rect
-                        x="-14"
-                        y="0"
-                        width="28"
-                        height="4"
-                        fill="#2d3436"
-                        rx="2"
-                      />
-                      <rect
-                        x="-14"
-                        y="0"
-                        width={28 * hpPercentage}
-                        height="4"
-                        fill={creep.isBoss ? "#a29bfe" : "#ff7675"}
-                        rx="2"
-                      />
-                    </g>
-                  </g>
-                );
-              })}
-
-              {activeSlots.map((slot) => {
-                const isSelected =
-                  selectedSlot?.x === slot.x && selectedSlot?.y === slot.y;
-                return (
-                  <rect
-                    key={`overlay-${slot.x}-${slot.y}`}
-                    x={slot.x - SLOT_SIZE / 2}
-                    y={slot.y - SLOT_SIZE / 2}
-                    width={SLOT_SIZE}
-                    height={SLOT_SIZE}
-                    fill={isSelected ? "rgba(0, 210, 211, 0.2)" : "transparent"}
-                    stroke={isSelected ? "#00d2d3" : "transparent"}
-                    strokeWidth="3"
-                    rx="6"
-                    onClick={() => handleSlotClick(slot)}
-                    style={{ cursor: "pointer" }}
-                  />
-                );
-              })}
-
-              {selectedSlot && (
-                <foreignObject
-                  x={Math.max(
-                    10,
-                    Math.min(selectedSlot.x - 130, GAME_WIDTH - 270),
-                  )}
-                  y={Math.max(
-                    10,
-                    Math.min(selectedSlot.y - 150, GAME_HEIGHT - 310),
-                  )}
-                  width="260"
-                  height="300"
-                  style={{ zIndex: 30, overflow: "visible" }}
-                >
-                  {activeSelectedTower ? (
-                    <div
-                      style={{
-                        backgroundColor: "#2d3436",
-                        padding: "16px",
-                        borderRadius: "12px",
-                        boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
-                        border: `2px solid ${activeSelectedTower.color}`,
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "10px",
-                        height: "100%",
-                        color: "#fff",
-                      }}
+                {/* Directional Arrows placed midway on each path segment */}
+                {activePath.slice(0, -1).map((p1, i) => {
+                  const p2 = activePath[i + 1];
+                  const cx = (p1.x + p2.x) / 2;
+                  const cy = (p1.y + p2.y) / 2;
+                  const angle =
+                    Math.atan2(p2.y - p1.y, p2.x - p1.x) * (180 / Math.PI);
+                  return (
+                    <g
+                      key={`arrow-${i}`}
+                      transform={`translate(${cx}, ${cy}) rotate(${angle})`}
                     >
+                      <path
+                        d="M -12 -10 L 8 0 L -12 10 Z"
+                        fill="#fff"
+                        opacity="0.1"
+                      />
+                    </g>
+                  );
+                })}
+
+                {activeSelectedTower && (
+                  <circle
+                    cx={activeSelectedTower.x}
+                    cy={activeSelectedTower.y}
+                    r={activeSelectedTower.range}
+                    fill="rgba(0, 210, 211, 0.05)"
+                    stroke="#00d2d3"
+                    strokeWidth="2"
+                    strokeDasharray="6,6"
+                  />
+                )}
+
+                {/* Build Slots Visuals */}
+                {activeSlots.map((slot) => {
+                  const hasTower = stateRef.current.towers.some(
+                    (t) =>
+                      Math.abs(t.x - slot.x) < 5 && Math.abs(t.y - slot.y) < 5,
+                  );
+                  if (hasTower) return null;
+                  return (
+                    <g key={`slot-${slot.x}-${slot.y}`}>
+                      <rect
+                        x={slot.x - SLOT_SIZE / 2}
+                        y={slot.y - SLOT_SIZE / 2}
+                        width={SLOT_SIZE}
+                        height={SLOT_SIZE}
+                        fill="rgba(0,0,0,0.3)"
+                        rx="6"
+                      />
+                      <rect
+                        x={slot.x - SLOT_SIZE / 2}
+                        y={slot.y - SLOT_SIZE / 2}
+                        width={SLOT_SIZE}
+                        height={SLOT_SIZE}
+                        fill="none"
+                        stroke="#576574"
+                        strokeWidth="2"
+                        strokeDasharray="4, 4"
+                        rx="6"
+                      />
+                      <path
+                        d={`M ${slot.x - 8} ${slot.y} L ${slot.x + 8} ${slot.y} M ${slot.x} ${slot.y - 8} L ${slot.x} ${slot.y + 8}`}
+                        stroke="#576574"
+                        strokeWidth="2"
+                        opacity="0.5"
+                      />
+                    </g>
+                  );
+                })}
+
+                {stateRef.current.towers.map((tower) => (
+                  <g key={tower.id} filter="url(#drop-shadow)">
+                    {renderTowerShape(tower)}
+                  </g>
+                ))}
+
+                {stateRef.current.bullets.map((bullet) => (
+                  <g key={bullet.id}>{renderBullet(bullet)}</g>
+                ))}
+
+                {/* Creeps (Redesigned as mechs) */}
+                {stateRef.current.creeps.map((creep) => {
+                  const hpPercentage = Math.max(0, creep.hp / creep.maxHp);
+                  const isSlowed = Date.now() < creep.slowUntil;
+                  const size = creep.isBoss ? 1.5 : 1;
+
+                  return (
+                    <g
+                      key={creep.id}
+                      transform={`translate(${creep.x}, ${creep.y}) scale(${size})`}
+                      filter="url(#drop-shadow)"
+                    >
+                      {/* Shadow underneath rotation */}
+                      <ellipse
+                        cx="-2"
+                        cy="4"
+                        rx="14"
+                        ry="10"
+                        fill="rgba(0,0,0,0.4)"
+                        filter="url(#blur)"
+                      />
+
+                      <g transform={`rotate(${creep.angle})`}>
+                        {/* Treads */}
+                        <rect
+                          x="-12"
+                          y="-12"
+                          width="24"
+                          height="6"
+                          fill="#2d3436"
+                          rx="2"
+                        />
+                        <rect
+                          x="-12"
+                          y="6"
+                          width="24"
+                          height="6"
+                          fill="#2d3436"
+                          rx="2"
+                        />
+
+                        {/* Body */}
+                        <path
+                          d="M -10 -8 L 8 -8 L 14 0 L 8 8 L -10 8 Z"
+                          fill={creep.isBoss ? "#6c5ce7" : "#d63031"}
+                          stroke="#2d3436"
+                          strokeWidth="1.5"
+                        />
+
+                        {/* Viewport / Eye */}
+                        <polygon
+                          points="4,-4 10,0 4,4"
+                          fill={isSlowed ? "#00d2d3" : "#f1c40f"}
+                          filter={
+                            isSlowed ? "url(#glow-blue)" : "url(#glow-yellow)"
+                          }
+                        />
+
+                        {/* Detail lines */}
+                        <line
+                          x1="-4"
+                          y1="-8"
+                          x2="-4"
+                          y2="8"
+                          stroke="#2d3436"
+                          strokeWidth="1.5"
+                        />
+                      </g>
+
+                      {/* Health Bar (Does not rotate with the mech) */}
+                      <g
+                        transform={`translate(0, ${creep.isBoss ? -22 : -18})`}
+                      >
+                        <rect
+                          x="-14"
+                          y="0"
+                          width="28"
+                          height="4"
+                          fill="#2d3436"
+                          rx="2"
+                        />
+                        <rect
+                          x="-14"
+                          y="0"
+                          width={28 * hpPercentage}
+                          height="4"
+                          fill={creep.isBoss ? "#a29bfe" : "#ff7675"}
+                          rx="2"
+                        />
+                      </g>
+                    </g>
+                  );
+                })}
+
+                {activeSlots.map((slot) => {
+                  const isSelected =
+                    selectedSlot?.x === slot.x && selectedSlot?.y === slot.y;
+                  return (
+                    <rect
+                      key={`overlay-${slot.x}-${slot.y}`}
+                      x={slot.x - SLOT_SIZE / 2}
+                      y={slot.y - SLOT_SIZE / 2}
+                      width={SLOT_SIZE}
+                      height={SLOT_SIZE}
+                      fill={
+                        isSelected ? "rgba(0, 210, 211, 0.2)" : "transparent"
+                      }
+                      stroke={isSelected ? "#00d2d3" : "transparent"}
+                      strokeWidth="3"
+                      rx="6"
+                      onClick={() => handleSlotClick(slot)}
+                      style={{ cursor: "pointer" }}
+                    />
+                  );
+                })}
+
+                {selectedSlot && (
+                  <foreignObject
+                    x={Math.max(
+                      10,
+                      Math.min(selectedSlot.x - 130, GAME_WIDTH - 270),
+                    )}
+                    y={Math.max(
+                      10,
+                      Math.min(selectedSlot.y - 150, GAME_HEIGHT - 310),
+                    )}
+                    width="260"
+                    height="300"
+                    style={{ zIndex: 30, overflow: "visible" }}
+                  >
+                    {activeSelectedTower ? (
                       <div
-                        className="h-orbitron"
                         style={{
-                          textAlign: "center",
-                          fontWeight: "800",
-                          color: activeSelectedTower.color,
-                          fontSize: "1.2rem",
-                          letterSpacing: "1px",
+                          backgroundColor: "#2d3436",
+                          padding: "16px",
+                          borderRadius: "12px",
+                          boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
+                          border: `2px solid ${activeSelectedTower.color}`,
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: "10px",
+                          height: "100%",
+                          color: "#fff",
                         }}
                       >
-                        {activeSelectedTower.label.toUpperCase()}
-                      </div>
-                      {activeSelectedTower.level < 3 ? (
+                        <div
+                          className="h-orbitron"
+                          style={{
+                            textAlign: "center",
+                            fontWeight: "800",
+                            color: activeSelectedTower.color,
+                            fontSize: "1.2rem",
+                            letterSpacing: "1px",
+                          }}
+                        >
+                          {activeSelectedTower.label.toUpperCase()}
+                        </div>
+                        {activeSelectedTower.level < 3 ? (
+                          <button
+                            onClick={upgradeTower}
+                            disabled={
+                              stateRef.current.money < currentUpgradeCost
+                            }
+                            style={{
+                              padding: "12px",
+                              borderRadius: "6px",
+                              border: "none",
+                              backgroundColor:
+                                stateRef.current.money >= currentUpgradeCost
+                                  ? "#0984e3"
+                                  : "#636e72",
+                              color:
+                                stateRef.current.money >= currentUpgradeCost
+                                  ? "#fff"
+                                  : "#b2bec3",
+                              fontWeight: "bold",
+                              cursor:
+                                stateRef.current.money >= currentUpgradeCost
+                                  ? "pointer"
+                                  : "not-allowed",
+                              fontFamily: "inherit",
+                            }}
+                          >
+                            Upgrade Lvl {activeSelectedTower.level + 1} ($
+                            {currentUpgradeCost})
+                          </button>
+                        ) : (
+                          <div
+                            style={{
+                              textAlign: "center",
+                              padding: "12px",
+                              color: "#fdcb6e",
+                              fontWeight: "bold",
+                              backgroundColor: "#353b48",
+                              borderRadius: "6px",
+                              border: "1px solid #fdcb6e",
+                            }}
+                          >
+                            MAX LEVEL ACHIEVED
+                          </div>
+                        )}
                         <button
-                          onClick={upgradeTower}
-                          disabled={stateRef.current.money < currentUpgradeCost}
+                          onClick={sellTower}
                           style={{
                             padding: "12px",
                             borderRadius: "6px",
                             border: "none",
-                            backgroundColor:
-                              stateRef.current.money >= currentUpgradeCost
-                                ? "#0984e3"
-                                : "#636e72",
-                            color:
-                              stateRef.current.money >= currentUpgradeCost
-                                ? "#fff"
-                                : "#b2bec3",
+                            backgroundColor: "#d63031",
+                            color: "#fff",
                             fontWeight: "bold",
-                            cursor:
-                              stateRef.current.money >= currentUpgradeCost
-                                ? "pointer"
-                                : "not-allowed",
+                            cursor: "pointer",
                             fontFamily: "inherit",
                           }}
                         >
-                          Upgrade Lvl {activeSelectedTower.level + 1} ($
-                          {currentUpgradeCost})
+                          Scrap Tower (${currentSellValue})
                         </button>
-                      ) : (
-                        <div
+                        <button
                           style={{
-                            textAlign: "center",
-                            padding: "12px",
-                            color: "#fdcb6e",
+                            padding: "8px",
+                            marginTop: "auto",
+                            backgroundColor: "transparent",
+                            border: "none",
+                            cursor: "pointer",
                             fontWeight: "bold",
-                            backgroundColor: "#353b48",
-                            borderRadius: "6px",
-                            border: "1px solid #fdcb6e",
+                            color: "#b2bec3",
+                            fontFamily: "inherit",
+                          }}
+                          onClick={() => setSelectedSlot(null)}
+                        >
+                          CLOSE
+                        </button>
+                      </div>
+                    ) : (
+                      <div
+                        style={{
+                          backgroundColor: "#2d3436",
+                          padding: "16px",
+                          borderRadius: "12px",
+                          boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
+                          display: "grid",
+                          gridTemplateColumns: "1fr 1fr",
+                          gap: "10px",
+                          border: "2px solid #00d2d3",
+                          height: "100%",
+                          color: "#fff",
+                        }}
+                      >
+                        <div
+                          className="h-orbitron"
+                          style={{
+                            gridColumn: "1 / -1",
+                            textAlign: "center",
+                            fontSize: "1.1rem",
+                            fontWeight: "800",
+                            color: "#00d2d3",
+                            marginBottom: "4px",
                           }}
                         >
-                          MAX LEVEL ACHIEVED
+                          CONSTRUCT
                         </div>
-                      )}
-                      <button
-                        onClick={sellTower}
-                        style={{
-                          padding: "12px",
-                          borderRadius: "6px",
-                          border: "none",
-                          backgroundColor: "#d63031",
-                          color: "#fff",
-                          fontWeight: "bold",
-                          cursor: "pointer",
-                          fontFamily: "inherit",
-                        }}
-                      >
-                        Scrap Tower (${currentSellValue})
-                      </button>
-                      <button
-                        style={{
-                          padding: "8px",
-                          marginTop: "auto",
-                          backgroundColor: "transparent",
-                          border: "none",
-                          cursor: "pointer",
-                          fontWeight: "bold",
-                          color: "#b2bec3",
-                          fontFamily: "inherit",
-                        }}
-                        onClick={() => setSelectedSlot(null)}
-                      >
-                        CLOSE
-                      </button>
-                    </div>
-                  ) : (
-                    <div
-                      style={{
-                        backgroundColor: "#2d3436",
-                        padding: "16px",
-                        borderRadius: "12px",
-                        boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
-                        display: "grid",
-                        gridTemplateColumns: "1fr 1fr",
-                        gap: "10px",
-                        border: "2px solid #00d2d3",
-                        height: "100%",
-                        color: "#fff",
-                      }}
-                    >
-                      <div
-                        className="h-orbitron"
-                        style={{
-                          gridColumn: "1 / -1",
-                          textAlign: "center",
-                          fontSize: "1.1rem",
-                          fontWeight: "800",
-                          color: "#00d2d3",
-                          marginBottom: "4px",
-                        }}
-                      >
-                        CONSTRUCT
+                        {(
+                          Object.entries(TOWER_DICTIONARY) as [
+                            TowerType,
+                            TowerConfig,
+                          ][]
+                        ).map(([type, config]) => {
+                          const canAfford =
+                            stateRef.current.money >= config.cost;
+                          return (
+                            <button
+                              type="button"
+                              key={type}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                buildTower(type);
+                              }}
+                              disabled={!canAfford}
+                              style={{
+                                padding: "15px 10px", // Increased vertical padding for easier tapping
+                                minHeight: "60px",
+                                backgroundColor: canAfford
+                                  ? "#353b48"
+                                  : "#2d3436",
+                                border: `1px solid ${canAfford ? config.color : "#636e72"}`,
+                                borderRadius: "8px",
+                                cursor: canAfford ? "pointer" : "not-allowed",
+                                display: "flex",
+                                flexDirection: "column",
+                                alignItems: "center",
+                                opacity: canAfford ? 1 : 0.4,
+                                fontFamily: "inherit",
+                                transition: "transform 0.1s",
+                              }}
+                              onMouseDown={(e) =>
+                                canAfford &&
+                                (e.currentTarget.style.transform =
+                                  "scale(0.95)")
+                              }
+                              onMouseUp={(e) =>
+                                canAfford &&
+                                (e.currentTarget.style.transform = "scale(1)")
+                              }
+                              onMouseLeave={(e) =>
+                                canAfford &&
+                                (e.currentTarget.style.transform = "scale(1)")
+                              }
+                            >
+                              <div
+                                style={{
+                                  width: "20px",
+                                  height: "20px",
+                                  backgroundColor: config.color,
+                                  borderRadius: type === "goo" ? "50%" : "4px",
+                                  marginBottom: "8px",
+                                  boxShadow: `0 0 8px ${config.color}`,
+                                }}
+                              />
+                              <span
+                                style={{
+                                  fontSize: "0.8rem",
+                                  fontWeight: "800",
+                                  color: "#dfe6e9",
+                                  textTransform: "uppercase",
+                                }}
+                              >
+                                {config.label}
+                              </span>
+                              <span
+                                style={{
+                                  fontSize: "0.8rem",
+                                  fontWeight: "600",
+                                  color: canAfford ? "#fdcb6e" : "#ff7675",
+                                }}
+                              >
+                                ${config.cost}
+                              </span>
+                            </button>
+                          );
+                        })}
+                        <button
+                          style={{
+                            gridColumn: "1 / -1",
+                            padding: "10px",
+                            marginTop: "auto",
+                            backgroundColor: "transparent",
+                            border: "1px solid #d63031",
+                            borderRadius: "6px",
+                            cursor: "pointer",
+                            fontWeight: "bold",
+                            color: "#ff7675",
+                            fontFamily: "inherit",
+                            transition: "all 0.2s",
+                          }}
+                          onClick={() => setSelectedSlot(null)}
+                        >
+                          CANCEL
+                        </button>
                       </div>
-                      {(
-                        Object.entries(TOWER_DICTIONARY) as [
-                          TowerType,
-                          TowerConfig,
-                        ][]
-                      ).map(([type, config]) => {
-                        const canAfford = stateRef.current.money >= config.cost;
-                        return (
-                          <button
-                            key={type}
-                            onClick={() => buildTower(type)}
-                            disabled={!canAfford}
-                            style={{
-                              padding: "10px 6px",
-                              backgroundColor: canAfford
-                                ? "#353b48"
-                                : "#2d3436",
-                              border: `1px solid ${canAfford ? config.color : "#636e72"}`,
-                              borderRadius: "8px",
-                              cursor: canAfford ? "pointer" : "not-allowed",
-                              display: "flex",
-                              flexDirection: "column",
-                              alignItems: "center",
-                              opacity: canAfford ? 1 : 0.4,
-                              fontFamily: "inherit",
-                              transition: "transform 0.1s",
-                            }}
-                            onMouseDown={(e) =>
-                              canAfford &&
-                              (e.currentTarget.style.transform = "scale(0.95)")
-                            }
-                            onMouseUp={(e) =>
-                              canAfford &&
-                              (e.currentTarget.style.transform = "scale(1)")
-                            }
-                            onMouseLeave={(e) =>
-                              canAfford &&
-                              (e.currentTarget.style.transform = "scale(1)")
-                            }
-                          >
-                            <div
-                              style={{
-                                width: "20px",
-                                height: "20px",
-                                backgroundColor: config.color,
-                                borderRadius: type === "goo" ? "50%" : "4px",
-                                marginBottom: "8px",
-                                boxShadow: `0 0 8px ${config.color}`,
-                              }}
-                            />
-                            <span
-                              style={{
-                                fontSize: "0.8rem",
-                                fontWeight: "800",
-                                color: "#dfe6e9",
-                                textTransform: "uppercase",
-                              }}
-                            >
-                              {config.label}
-                            </span>
-                            <span
-                              style={{
-                                fontSize: "0.8rem",
-                                fontWeight: "600",
-                                color: canAfford ? "#fdcb6e" : "#ff7675",
-                              }}
-                            >
-                              ${config.cost}
-                            </span>
-                          </button>
-                        );
-                      })}
-                      <button
-                        style={{
-                          gridColumn: "1 / -1",
-                          padding: "10px",
-                          marginTop: "auto",
-                          backgroundColor: "transparent",
-                          border: "1px solid #d63031",
-                          borderRadius: "6px",
-                          cursor: "pointer",
-                          fontWeight: "bold",
-                          color: "#ff7675",
-                          fontFamily: "inherit",
-                          transition: "all 0.2s",
-                        }}
-                        onClick={() => setSelectedSlot(null)}
-                      >
-                        CANCEL
-                      </button>
-                    </div>
-                  )}
-                </foreignObject>
-              )}
-            </svg>
+                    )}
+                  </foreignObject>
+                )}
+              </svg>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </>
   );
 }

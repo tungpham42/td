@@ -925,7 +925,7 @@ export default function TowerDefenseGame() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
         body { background-color: #1e272e; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; overflow-x: hidden; }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); }
         .h-orbitron { font-family: 'Orbitron', sans-serif; }
 
         @media screen and (orientation: portrait) and (max-width: 1024px) {
@@ -1636,14 +1636,25 @@ export default function TowerDefenseGame() {
                       y={slot.y - SLOT_SIZE / 2}
                       width={SLOT_SIZE}
                       height={SLOT_SIZE}
+                      // Fix: Use rgba(0,0,0,0) instead of "transparent" for reliable iOS repaints
                       fill={
-                        isSelected ? "rgba(0, 210, 211, 0.2)" : "transparent"
+                        isSelected
+                          ? "rgba(0, 210, 211, 0.2)"
+                          : "rgba(0, 0, 0, 0)"
                       }
-                      stroke={isSelected ? "#00d2d3" : "transparent"}
+                      stroke={isSelected ? "#00d2d3" : "rgba(0, 0, 0, 0)"}
                       strokeWidth="3"
                       rx="6"
                       onClick={() => handleSlotClick(slot)}
-                      style={{ cursor: "pointer" }}
+                      // Fix: Intercept touch events natively to prevent stuck highlight states
+                      onTouchEnd={(e) => {
+                        e.preventDefault();
+                        handleSlotClick(slot);
+                      }}
+                      style={{
+                        cursor: "pointer",
+                        WebkitTapHighlightColor: "transparent",
+                      }}
                     />
                   );
                 })}
@@ -1784,7 +1795,7 @@ export default function TowerDefenseGame() {
                             }}
                             style={{
                               padding: "8px",
-                              backgroundColor: "transparent",
+                              backgroundColor: "rgba(0, 0, 0, 0)",
                               border: "none",
                               cursor: "pointer",
                               fontWeight: "bold",
@@ -1922,7 +1933,7 @@ export default function TowerDefenseGame() {
                             }}
                             style={{
                               padding: "10px",
-                              backgroundColor: "transparent",
+                              backgroundColor: "rgba(0, 0, 0, 0)",
                               border: "1px solid #d63031",
                               borderRadius: "6px",
                               cursor: "pointer",

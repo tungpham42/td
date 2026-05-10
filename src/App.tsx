@@ -134,7 +134,7 @@ type Creep = {
   pathIndex: number;
   slowUntil: number;
   isBoss?: boolean;
-  angle: number; // Added rotation angle for creeps
+  angle: number;
 };
 
 type TowerType = "gatling" | "goo" | "missile" | "tesla";
@@ -1699,10 +1699,16 @@ export default function TowerDefenseGame() {
                     )}
                     width="260"
                     height="300"
-                    style={{ zIndex: 30, overflow: "visible" }}
+                    style={{
+                      zIndex: 30,
+                      overflow: "visible",
+                      pointerEvents: "auto",
+                    }} // CRITICAL FIX
                   >
                     {activeSelectedTower ? (
                       <div
+                        onClick={(e) => e.stopPropagation()} // BLOCK TOUCH BLEED
+                        onTouchEnd={(e) => e.stopPropagation()} // BLOCK TOUCH BLEED
                         style={{
                           backgroundColor: "#2d3436",
                           padding: "16px",
@@ -1714,6 +1720,7 @@ export default function TowerDefenseGame() {
                           gap: "10px",
                           height: "100%",
                           color: "#fff",
+                          pointerEvents: "auto", // CRITICAL FIX
                         }}
                       >
                         <div
@@ -1730,7 +1737,15 @@ export default function TowerDefenseGame() {
                         </div>
                         {activeSelectedTower.level < 3 ? (
                           <button
-                            onClick={upgradeTower}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              upgradeTower();
+                            }}
+                            onTouchEnd={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              upgradeTower();
+                            }} // IOS FIX
                             disabled={
                               stateRef.current.money < currentUpgradeCost
                             }
@@ -1773,7 +1788,15 @@ export default function TowerDefenseGame() {
                           </div>
                         )}
                         <button
-                          onClick={sellTower}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            sellTower();
+                          }}
+                          onTouchEnd={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            sellTower();
+                          }} // IOS FIX
                           style={{
                             padding: "12px",
                             borderRadius: "6px",
@@ -1788,6 +1811,15 @@ export default function TowerDefenseGame() {
                           Scrap Tower (${currentSellValue})
                         </button>
                         <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedSlot(null);
+                          }}
+                          onTouchEnd={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setSelectedSlot(null);
+                          }} // IOS FIX
                           style={{
                             padding: "8px",
                             marginTop: "auto",
@@ -1798,13 +1830,14 @@ export default function TowerDefenseGame() {
                             color: "#b2bec3",
                             fontFamily: "inherit",
                           }}
-                          onClick={() => setSelectedSlot(null)}
                         >
                           CLOSE
                         </button>
                       </div>
                     ) : (
                       <div
+                        onClick={(e) => e.stopPropagation()} // BLOCK TOUCH BLEED
+                        onTouchEnd={(e) => e.stopPropagation()} // BLOCK TOUCH BLEED
                         style={{
                           backgroundColor: "#2d3436",
                           padding: "16px",
@@ -1816,6 +1849,7 @@ export default function TowerDefenseGame() {
                           border: "2px solid #00d2d3",
                           height: "100%",
                           color: "#fff",
+                          pointerEvents: "auto", // CRITICAL FIX
                         }}
                       >
                         <div
@@ -1847,9 +1881,14 @@ export default function TowerDefenseGame() {
                                 e.stopPropagation();
                                 buildTower(type);
                               }}
+                              onTouchEnd={(e) => {
+                                e.preventDefault(); // IOS FIX: Prevent Ghost Click
+                                e.stopPropagation();
+                                buildTower(type);
+                              }}
                               disabled={!canAfford}
                               style={{
-                                padding: "15px 10px", // Increased vertical padding for easier tapping
+                                padding: "15px 10px",
                                 minHeight: "60px",
                                 backgroundColor: canAfford
                                   ? "#353b48"
@@ -1911,6 +1950,15 @@ export default function TowerDefenseGame() {
                           );
                         })}
                         <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedSlot(null);
+                          }}
+                          onTouchEnd={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setSelectedSlot(null);
+                          }} // IOS FIX
                           style={{
                             gridColumn: "1 / -1",
                             padding: "10px",
@@ -1924,7 +1972,6 @@ export default function TowerDefenseGame() {
                             fontFamily: "inherit",
                             transition: "all 0.2s",
                           }}
-                          onClick={() => setSelectedSlot(null)}
                         >
                           CANCEL
                         </button>

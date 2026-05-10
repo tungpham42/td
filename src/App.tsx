@@ -1855,13 +1855,15 @@ export default function TowerDefenseGame() {
                                   }}
                                   disabled={!canAfford}
                                   style={{
-                                    padding: "10px 5px",
-                                    minHeight: "65px",
+                                    // Using clamp to scale padding and height dynamically
+                                    padding:
+                                      "clamp(6px, 1.5vh, 12px) clamp(4px, 1vw, 8px)",
+                                    minHeight: "clamp(55px, 12vh, 80px)",
                                     backgroundColor: canAfford
                                       ? "#353b48"
                                       : "#2d3436",
                                     border: `1px solid ${canAfford ? config.color : "#636e72"}`,
-                                    borderRadius: "8px",
+                                    borderRadius: "clamp(6px, 1.5vw, 10px)", // Scaling border radius as well
                                     cursor: canAfford
                                       ? "pointer"
                                       : "not-allowed",

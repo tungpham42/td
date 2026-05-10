@@ -1875,8 +1875,8 @@ export default function TowerDefenseGame() {
                                 >
                                   <div
                                     style={{
-                                      width: "20px",
-                                      height: "20px",
+                                      width: "clamp(16px, 4vw, 32px)",
+                                      height: "clamp(16px, 4vw, 32px)",
                                       backgroundColor: config.color,
                                       borderRadius:
                                         type === "goo" ? "50%" : "4px",

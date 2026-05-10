@@ -285,7 +285,6 @@ const generateLevels = (): LevelData[] => {
       y: p.y <= 0 || p.y >= 540 ? p.y : p.y + offset,
     }));
 
-    // Slots hugging the path perfectly
     const rawSlots: Point[] = [];
     const SLOT_DIST = 50;
     const SLOT_SPACING = 52;
@@ -348,7 +347,7 @@ export default function TowerDefenseGame() {
   const [appView, setAppView] = useState<"menu" | "game">("menu");
   const [activeLevelId, setActiveLevelId] = useState<number>(0);
   const [selectedSlot, setSelectedSlot] = useState<Point | null>(null);
-  const [currentTime, setCurrentTime] = useState(Date.now()); // Force re-render for animations
+  const [currentTime, setCurrentTime] = useState(Date.now());
 
   const stateRef = useRef<GameState>({
     creeps: [],
@@ -423,7 +422,6 @@ export default function TowerDefenseGame() {
 
     const maxWaves = 10;
 
-    // 1. Spawning AI
     if (state.wave > 0 && state.wave <= maxWaves) {
       const creepsToSpawn = state.wave * 4;
       const hpMultiplier = 1 + state.currentLevelId * 0.2;
@@ -439,7 +437,6 @@ export default function TowerDefenseGame() {
         const baseHp = (40 + state.wave * 30) * hpMultiplier;
         const baseSpeed = (1.2 + state.wave * 0.15) * speedMultiplier;
 
-        // Calculate initial facing angle
         const dx = currentPath[1].x - currentPath[0].x;
         const dy = currentPath[1].y - currentPath[0].y;
 
@@ -468,7 +465,6 @@ export default function TowerDefenseGame() {
       state.gameWon = true;
     }
 
-    // 2. Creep Movement with Rotation
     for (let i = state.creeps.length - 1; i >= 0; i--) {
       const creep = state.creeps[i];
       let currentSpeed =
@@ -481,7 +477,7 @@ export default function TowerDefenseGame() {
         const dist = Math.hypot(dx, dy);
 
         if (dist > 0) {
-          creep.angle = Math.atan2(dy, dx) * (180 / Math.PI); // Update rotation to face movement
+          creep.angle = Math.atan2(dy, dx) * (180 / Math.PI);
         }
 
         if (dist <= currentSpeed) {
@@ -504,7 +500,6 @@ export default function TowerDefenseGame() {
       }
     }
 
-    // 3. Tower AI
     state.towers.forEach((tower) => {
       const target = state.creeps.find(
         (c) => Math.hypot(c.x - tower.x, c.y - tower.y) <= tower.range,
@@ -531,7 +526,6 @@ export default function TowerDefenseGame() {
       }
     });
 
-    // 4. Bullet AI
     for (let i = state.bullets.length - 1; i >= 0; i--) {
       const bullet = state.bullets[i];
       const target = state.creeps.find((c) => c.id === bullet.targetId);
@@ -559,7 +553,6 @@ export default function TowerDefenseGame() {
       }
     }
 
-    // 5. Cleanup & Economy
     for (let i = state.creeps.length - 1; i >= 0; i--) {
       if (state.creeps[i].hp <= 0) {
         const wasBoss = state.creeps[i].isBoss;
@@ -677,11 +670,8 @@ export default function TowerDefenseGame() {
     currentSellValue = Math.floor(invested * 0.5);
   }
 
-  // --- Render Helpers (Realistic SVG) ---
   const renderTowerShape = (tower: Tower) => {
     const { x, y, type, angle, level, lastFired, cooldown } = tower;
-
-    // Calculate recoil based on time since last fired
     const timeSinceFire = currentTime - lastFired;
     const isFiring = timeSinceFire < 150;
     const recoilAmount = isFiring ? Math.max(0, 150 - timeSinceFire) / 15 : 0;
@@ -695,8 +685,6 @@ export default function TowerDefenseGame() {
           fill="rgba(0,0,0,0.3)"
           filter="url(#blur)"
         />
-
-        {/* Level indicators */}
         <g transform="translate(0, 22)">
           {Array.from({ length: level }).map((_, i) => (
             <circle
@@ -710,8 +698,6 @@ export default function TowerDefenseGame() {
             />
           ))}
         </g>
-
-        {/* Tower Base (Realistic metal podium) */}
         <rect
           x="-20"
           y="-20"
@@ -731,11 +717,9 @@ export default function TowerDefenseGame() {
           strokeWidth="2"
         />
 
-        {/* Rotating Head */}
         <g transform={`rotate(${angle})`}>
           {type === "gatling" && (
             <g transform={`translate(${-recoilAmount}, 0)`}>
-              {/* Dual Barrels */}
               <rect
                 x="0"
                 y="-8"
@@ -752,7 +736,6 @@ export default function TowerDefenseGame() {
                 fill="url(#gunmetal)"
                 rx="1"
               />
-              {/* Muzzle flashes if firing */}
               {isFiring && (
                 <ellipse
                   cx="32"
@@ -773,7 +756,6 @@ export default function TowerDefenseGame() {
                   filter="url(#glow-yellow)"
                 />
               )}
-              {/* Body */}
               <path
                 d="M -8 -12 L 8 -10 L 12 0 L 8 10 L -8 12 Z"
                 fill="url(#metalBody)"
@@ -803,12 +785,9 @@ export default function TowerDefenseGame() {
                   opacity="0.6"
                 />
               )}
-              {/* Bio Vat Base */}
               <circle cx="0" cy="0" r="15" fill="url(#gooGrad)" />
-              {/* Bubbles */}
               <circle cx="-4" cy="-4" r="3" fill="#fff" opacity="0.4" />
               <circle cx="4" cy="6" r="2" fill="#fff" opacity="0.3" />
-              {/* Glass Dome Overlay */}
               <circle cx="0" cy="0" r="15" fill="url(#glassFlare)" />
               <circle
                 cx="0"
@@ -823,7 +802,6 @@ export default function TowerDefenseGame() {
 
           {type === "missile" && (
             <g transform={`translate(${-recoilAmount}, 0)`}>
-              {/* Launcher Base */}
               <rect
                 x="-12"
                 y="-14"
@@ -832,10 +810,8 @@ export default function TowerDefenseGame() {
                 fill="url(#militaryGreen)"
                 rx="2"
               />
-              {/* Tubes */}
               <rect x="4" y="-10" width="16" height="6" fill="#2d3436" rx="1" />
               <rect x="4" y="4" width="16" height="6" fill="#2d3436" rx="1" />
-              {/* Missiles loaded (disappear when firing) */}
               {timeSinceFire > cooldown * 0.5 && (
                 <path d="M 12 -9 L 22 -7 L 12 -5 Z" fill="#e74c3c" />
               )}
@@ -847,7 +823,6 @@ export default function TowerDefenseGame() {
 
           {type === "tesla" && (
             <g>
-              {/* Prongs */}
               <path
                 d="M 0 -10 L 20 -14 L 14 -4 Z"
                 fill="#747d8c"
@@ -867,7 +842,6 @@ export default function TowerDefenseGame() {
                   filter="url(#glow-blue)"
                 />
               )}
-              {/* Glowing Core */}
               <circle cx="0" cy="0" r="12" fill="#2f3542" />
               <circle
                 cx="0"
@@ -915,7 +889,6 @@ export default function TowerDefenseGame() {
             <rect x="-8" y="-3" width="16" height="6" fill="#ecf0f1" rx="2" />
             <path d="M 6 -3 L 12 0 L 6 3 Z" fill="#e74c3c" />
             <polygon points="-8,-3 -12,-6 -10,0 -12,6 -8,3" fill="#7f8c8d" />
-            {/* Engine Trail */}
             <circle
               cx="-14"
               cy="0"
@@ -939,15 +912,22 @@ export default function TowerDefenseGame() {
     );
   };
 
+  // Safe visual coordinates for the padded foreignObject
+  const visualX = selectedSlot
+    ? Math.max(20, Math.min(selectedSlot.x - 130, GAME_WIDTH - 280))
+    : 0;
+  const visualY = selectedSlot
+    ? Math.max(20, Math.min(selectedSlot.y - 150, GAME_HEIGHT - 320))
+    : 0;
+
   return (
     <>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
         body { background-color: #1e272e; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; overflow-x: hidden; }
-        * { box-sizing: border-box; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         .h-orbitron { font-family: 'Orbitron', sans-serif; }
 
-        /* --- Force Landscape Prompt --- */
         @media screen and (orientation: portrait) and (max-width: 1024px) {
           .landscape-warning { display: flex !important; }
           .game-root-container { display: none !important; }
@@ -967,18 +947,17 @@ export default function TowerDefenseGame() {
           padding: 20px;
         }
 
-        /* --- Responsive Menu Styles --- */
         .menu-container {
           display: flex;
           flex-direction: column;
           justify-content: center;
           align-items: center;
-          height: 100vh; /* Force exact screen height */
+          height: 100vh; 
           padding: 2vh 4vw;
           max-width: 1000px;
           margin: 0 auto;
           text-align: center;
-          overflow: hidden; /* Prevent scrolling */
+          overflow: hidden;
         }
         .menu-title {
           font-size: clamp(2.2rem, 8vw, 4rem);
@@ -996,7 +975,6 @@ export default function TowerDefenseGame() {
           display: grid;
           width: 100%;
           gap: clamp(8px, 2vh, 24px);
-          /* 3 columns on mobile to ensure all 12 fit without scrolling */
           grid-template-columns: repeat(3, 1fr); 
         }
         @media (min-width: 600px) {
@@ -1016,21 +994,26 @@ export default function TowerDefenseGame() {
           font-family: inherit;
           text-transform: uppercase;
         }
-        /* Mobile Touch / Click down state */
         .zone-btn:active {
           transform: translateY(clamp(4px, 1vh, 6px)) !important;
           box-shadow: 0 0px 0 #0abde3, 0 4px 8px rgba(0,0,0,0.4) !important;
         }
-        /* Desktop Hover state */
         @media (hover: hover) {
           .zone-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 clamp(6px, 1.5vh, 8px) 0 #0abde3, 0 12px 20px rgba(0,0,0,0.5);
           }
         }
+        
+        /* Modal Action Buttons (Fixed iOS Popping Out Bug) */
+        .construct-btn {
+          transition: transform 0.1s ease, filter 0.1s ease;
+        }
+        .construct-btn:active {
+          transform: scale(0.95);
+        }
       `}</style>
 
-      {/* Landscape Warning View */}
       <div className="landscape-warning h-orbitron">
         <svg
           width="60"
@@ -1102,7 +1085,6 @@ export default function TowerDefenseGame() {
                   >
                     ZONE {activeLevelId + 1}
                   </div>
-                  {/* --- SVG Heart Icon --- */}
                   <div
                     style={{
                       display: "flex",
@@ -1122,8 +1104,6 @@ export default function TowerDefenseGame() {
                       {stateRef.current.baseHp}
                     </span>
                   </div>
-
-                  {/* --- SVG Coin/Money Icon --- */}
                   <div
                     style={{
                       display: "flex",
@@ -1186,6 +1166,7 @@ export default function TowerDefenseGame() {
               </div>
               <button
                 onClick={handleRetreat}
+                className="construct-btn"
                 style={{
                   padding: "12px 20px",
                   backgroundColor: "#d63031",
@@ -1340,7 +1321,6 @@ export default function TowerDefenseGame() {
                     </feMerge>
                   </filter>
 
-                  {/* Gradients */}
                   <linearGradient id="metalBase" x1="0" y1="0" x2="1" y2="1">
                     <stop offset="0%" stopColor="#7f8c8d" />
                     <stop offset="100%" stopColor="#2c3e50" />
@@ -1441,8 +1421,6 @@ export default function TowerDefenseGame() {
 
                 <rect width="100%" height="100%" fill="url(#realisticGrass)" />
 
-                {/* Realistic Path Rendering */}
-                {/* Shadow Base */}
                 <path
                   d={activePath
                     .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`)
@@ -1455,7 +1433,6 @@ export default function TowerDefenseGame() {
                   filter="url(#blur)"
                   transform="translate(0, 4)"
                 />
-                {/* Outer Border */}
                 <path
                   d={activePath
                     .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`)
@@ -1466,7 +1443,6 @@ export default function TowerDefenseGame() {
                   strokeLinecap="square"
                   strokeLinejoin="miter"
                 />
-                {/* Inner Dirt Texture */}
                 <path
                   d={activePath
                     .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`)
@@ -1477,7 +1453,6 @@ export default function TowerDefenseGame() {
                   strokeLinecap="square"
                   strokeLinejoin="miter"
                 />
-                {/* Center Line Guides */}
                 <path
                   d={activePath
                     .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`)
@@ -1490,7 +1465,6 @@ export default function TowerDefenseGame() {
                   strokeDasharray="12, 12"
                 />
 
-                {/* Directional Arrows placed midway on each path segment */}
                 {activePath.slice(0, -1).map((p1, i) => {
                   const p2 = activePath[i + 1];
                   const cx = (p1.x + p2.x) / 2;
@@ -1523,7 +1497,6 @@ export default function TowerDefenseGame() {
                   />
                 )}
 
-                {/* Build Slots Visuals */}
                 {activeSlots.map((slot) => {
                   const hasTower = stateRef.current.towers.some(
                     (t) =>
@@ -1571,7 +1544,6 @@ export default function TowerDefenseGame() {
                   <g key={bullet.id}>{renderBullet(bullet)}</g>
                 ))}
 
-                {/* Creeps (Redesigned as mechs) */}
                 {stateRef.current.creeps.map((creep) => {
                   const hpPercentage = Math.max(0, creep.hp / creep.maxHp);
                   const isSlowed = Date.now() < creep.slowUntil;
@@ -1583,7 +1555,6 @@ export default function TowerDefenseGame() {
                       transform={`translate(${creep.x}, ${creep.y}) scale(${size})`}
                       filter="url(#drop-shadow)"
                     >
-                      {/* Shadow underneath rotation */}
                       <ellipse
                         cx="-2"
                         cy="4"
@@ -1592,9 +1563,7 @@ export default function TowerDefenseGame() {
                         fill="rgba(0,0,0,0.4)"
                         filter="url(#blur)"
                       />
-
                       <g transform={`rotate(${creep.angle})`}>
-                        {/* Treads */}
                         <rect
                           x="-12"
                           y="-12"
@@ -1611,16 +1580,12 @@ export default function TowerDefenseGame() {
                           fill="#2d3436"
                           rx="2"
                         />
-
-                        {/* Body */}
                         <path
                           d="M -10 -8 L 8 -8 L 14 0 L 8 8 L -10 8 Z"
                           fill={creep.isBoss ? "#6c5ce7" : "#d63031"}
                           stroke="#2d3436"
                           strokeWidth="1.5"
                         />
-
-                        {/* Viewport / Eye */}
                         <polygon
                           points="4,-4 10,0 4,4"
                           fill={isSlowed ? "#00d2d3" : "#f1c40f"}
@@ -1628,8 +1593,6 @@ export default function TowerDefenseGame() {
                             isSlowed ? "url(#glow-blue)" : "url(#glow-yellow)"
                           }
                         />
-
-                        {/* Detail lines */}
                         <line
                           x1="-4"
                           y1="-8"
@@ -1639,8 +1602,6 @@ export default function TowerDefenseGame() {
                           strokeWidth="1.5"
                         />
                       </g>
-
-                      {/* Health Bar (Does not rotate with the mech) */}
                       <g
                         transform={`translate(0, ${creep.isBoss ? -22 : -18})`}
                       >
@@ -1687,296 +1648,292 @@ export default function TowerDefenseGame() {
                   );
                 })}
 
+                {/* MODAL FIX: Bounded padding to stop Safari box-shadow artifacts & sizing adjustments */}
                 {selectedSlot && (
                   <foreignObject
-                    x={Math.max(
-                      10,
-                      Math.min(selectedSlot.x - 130, GAME_WIDTH - 270),
-                    )}
-                    y={Math.max(
-                      10,
-                      Math.min(selectedSlot.y - 150, GAME_HEIGHT - 310),
-                    )}
-                    width="260"
-                    height="300"
-                    style={{
-                      zIndex: 30,
-                      overflow: "visible",
-                      pointerEvents: "auto",
-                    }} // CRITICAL FIX
+                    x={visualX - 20}
+                    y={visualY - 20}
+                    width="300"
+                    height="340"
+                    style={{ zIndex: 30, pointerEvents: "auto" }}
                   >
-                    {activeSelectedTower ? (
-                      <div
-                        onClick={(e) => e.stopPropagation()} // BLOCK TOUCH BLEED
-                        onTouchEnd={(e) => e.stopPropagation()} // BLOCK TOUCH BLEED
-                        style={{
-                          backgroundColor: "#2d3436",
-                          padding: "16px",
-                          borderRadius: "12px",
-                          boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
-                          border: `2px solid ${activeSelectedTower.color}`,
-                          display: "flex",
-                          flexDirection: "column",
-                          gap: "10px",
-                          height: "100%",
-                          color: "#fff",
-                          pointerEvents: "auto", // CRITICAL FIX
-                        }}
-                      >
+                    <div
+                      style={{
+                        padding: "20px",
+                        width: "100%",
+                        height: "100%",
+                        pointerEvents: "none",
+                      }}
+                    >
+                      {activeSelectedTower ? (
                         <div
-                          className="h-orbitron"
+                          onClick={(e) => e.stopPropagation()}
+                          onTouchEnd={(e) => e.stopPropagation()}
                           style={{
-                            textAlign: "center",
-                            fontWeight: "800",
-                            color: activeSelectedTower.color,
-                            fontSize: "1.2rem",
-                            letterSpacing: "1px",
+                            backgroundColor: "#2d3436",
+                            padding: "16px",
+                            borderRadius: "12px",
+                            boxShadow: "0 10px 20px rgba(0,0,0,0.5)",
+                            border: `2px solid ${activeSelectedTower.color}`,
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: "10px",
+                            color: "#fff",
+                            pointerEvents: "auto",
                           }}
                         >
-                          {activeSelectedTower.label.toUpperCase()}
-                        </div>
-                        {activeSelectedTower.level < 3 ? (
+                          <div
+                            className="h-orbitron"
+                            style={{
+                              textAlign: "center",
+                              fontWeight: "800",
+                              color: activeSelectedTower.color,
+                              fontSize: "1.2rem",
+                              letterSpacing: "1px",
+                            }}
+                          >
+                            {activeSelectedTower.label.toUpperCase()}
+                          </div>
+                          {activeSelectedTower.level < 3 ? (
+                            <button
+                              className="construct-btn"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                upgradeTower();
+                              }}
+                              onTouchEnd={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                upgradeTower();
+                              }}
+                              disabled={
+                                stateRef.current.money < currentUpgradeCost
+                              }
+                              style={{
+                                padding: "12px",
+                                borderRadius: "6px",
+                                border: "none",
+                                backgroundColor:
+                                  stateRef.current.money >= currentUpgradeCost
+                                    ? "#0984e3"
+                                    : "#636e72",
+                                color:
+                                  stateRef.current.money >= currentUpgradeCost
+                                    ? "#fff"
+                                    : "#b2bec3",
+                                fontWeight: "bold",
+                                cursor:
+                                  stateRef.current.money >= currentUpgradeCost
+                                    ? "pointer"
+                                    : "not-allowed",
+                                fontFamily: "inherit",
+                              }}
+                            >
+                              Upgrade Lvl {activeSelectedTower.level + 1} ($
+                              {currentUpgradeCost})
+                            </button>
+                          ) : (
+                            <div
+                              style={{
+                                textAlign: "center",
+                                padding: "12px",
+                                color: "#fdcb6e",
+                                fontWeight: "bold",
+                                backgroundColor: "#353b48",
+                                borderRadius: "6px",
+                                border: "1px solid #fdcb6e",
+                              }}
+                            >
+                              MAX LEVEL ACHIEVED
+                            </div>
+                          )}
                           <button
+                            className="construct-btn"
                             onClick={(e) => {
                               e.stopPropagation();
-                              upgradeTower();
+                              sellTower();
                             }}
                             onTouchEnd={(e) => {
                               e.preventDefault();
                               e.stopPropagation();
-                              upgradeTower();
-                            }} // IOS FIX
-                            disabled={
-                              stateRef.current.money < currentUpgradeCost
-                            }
+                              sellTower();
+                            }}
                             style={{
                               padding: "12px",
                               borderRadius: "6px",
                               border: "none",
-                              backgroundColor:
-                                stateRef.current.money >= currentUpgradeCost
-                                  ? "#0984e3"
-                                  : "#636e72",
-                              color:
-                                stateRef.current.money >= currentUpgradeCost
-                                  ? "#fff"
-                                  : "#b2bec3",
+                              backgroundColor: "#d63031",
+                              color: "#fff",
                               fontWeight: "bold",
-                              cursor:
-                                stateRef.current.money >= currentUpgradeCost
-                                  ? "pointer"
-                                  : "not-allowed",
+                              cursor: "pointer",
                               fontFamily: "inherit",
                             }}
                           >
-                            Upgrade Lvl {activeSelectedTower.level + 1} ($
-                            {currentUpgradeCost})
+                            Scrap Tower (${currentSellValue})
                           </button>
-                        ) : (
-                          <div
+                          <button
+                            className="construct-btn"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedSlot(null);
+                            }}
+                            onTouchEnd={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setSelectedSlot(null);
+                            }}
                             style={{
-                              textAlign: "center",
-                              padding: "12px",
-                              color: "#fdcb6e",
+                              padding: "8px",
+                              backgroundColor: "transparent",
+                              border: "none",
+                              cursor: "pointer",
                               fontWeight: "bold",
-                              backgroundColor: "#353b48",
-                              borderRadius: "6px",
-                              border: "1px solid #fdcb6e",
+                              color: "#b2bec3",
+                              fontFamily: "inherit",
                             }}
                           >
-                            MAX LEVEL ACHIEVED
-                          </div>
-                        )}
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            sellTower();
-                          }}
-                          onTouchEnd={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            sellTower();
-                          }} // IOS FIX
-                          style={{
-                            padding: "12px",
-                            borderRadius: "6px",
-                            border: "none",
-                            backgroundColor: "#d63031",
-                            color: "#fff",
-                            fontWeight: "bold",
-                            cursor: "pointer",
-                            fontFamily: "inherit",
-                          }}
-                        >
-                          Scrap Tower (${currentSellValue})
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedSlot(null);
-                          }}
-                          onTouchEnd={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            setSelectedSlot(null);
-                          }} // IOS FIX
-                          style={{
-                            padding: "8px",
-                            marginTop: "auto",
-                            backgroundColor: "transparent",
-                            border: "none",
-                            cursor: "pointer",
-                            fontWeight: "bold",
-                            color: "#b2bec3",
-                            fontFamily: "inherit",
-                          }}
-                        >
-                          CLOSE
-                        </button>
-                      </div>
-                    ) : (
-                      <div
-                        onClick={(e) => e.stopPropagation()} // BLOCK TOUCH BLEED
-                        onTouchEnd={(e) => e.stopPropagation()} // BLOCK TOUCH BLEED
-                        style={{
-                          backgroundColor: "#2d3436",
-                          padding: "16px",
-                          borderRadius: "12px",
-                          boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
-                          display: "grid",
-                          gridTemplateColumns: "1fr 1fr",
-                          gap: "10px",
-                          border: "2px solid #00d2d3",
-                          height: "100%",
-                          color: "#fff",
-                          pointerEvents: "auto", // CRITICAL FIX
-                        }}
-                      >
-                        <div
-                          className="h-orbitron"
-                          style={{
-                            gridColumn: "1 / -1",
-                            textAlign: "center",
-                            fontSize: "1.1rem",
-                            fontWeight: "800",
-                            color: "#00d2d3",
-                            marginBottom: "4px",
-                          }}
-                        >
-                          CONSTRUCT
+                            CLOSE
+                          </button>
                         </div>
-                        {(
-                          Object.entries(TOWER_DICTIONARY) as [
-                            TowerType,
-                            TowerConfig,
-                          ][]
-                        ).map(([type, config]) => {
-                          const canAfford =
-                            stateRef.current.money >= config.cost;
-                          return (
-                            <button
-                              type="button"
-                              key={type}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                buildTower(type);
-                              }}
-                              onTouchEnd={(e) => {
-                                e.preventDefault(); // IOS FIX: Prevent Ghost Click
-                                e.stopPropagation();
-                                buildTower(type);
-                              }}
-                              disabled={!canAfford}
-                              style={{
-                                padding: "15px 10px",
-                                minHeight: "60px",
-                                backgroundColor: canAfford
-                                  ? "#353b48"
-                                  : "#2d3436",
-                                border: `1px solid ${canAfford ? config.color : "#636e72"}`,
-                                borderRadius: "8px",
-                                cursor: canAfford ? "pointer" : "not-allowed",
-                                display: "flex",
-                                flexDirection: "column",
-                                alignItems: "center",
-                                opacity: canAfford ? 1 : 0.4,
-                                fontFamily: "inherit",
-                                transition: "transform 0.1s",
-                              }}
-                              onMouseDown={(e) =>
-                                canAfford &&
-                                (e.currentTarget.style.transform =
-                                  "scale(0.95)")
-                              }
-                              onMouseUp={(e) =>
-                                canAfford &&
-                                (e.currentTarget.style.transform = "scale(1)")
-                              }
-                              onMouseLeave={(e) =>
-                                canAfford &&
-                                (e.currentTarget.style.transform = "scale(1)")
-                              }
-                            >
-                              <div
-                                style={{
-                                  width: "20px",
-                                  height: "20px",
-                                  backgroundColor: config.color,
-                                  borderRadius: type === "goo" ? "50%" : "4px",
-                                  marginBottom: "8px",
-                                  boxShadow: `0 0 8px ${config.color}`,
-                                }}
-                              />
-                              <span
-                                style={{
-                                  fontSize: "0.8rem",
-                                  fontWeight: "800",
-                                  color: "#dfe6e9",
-                                  textTransform: "uppercase",
-                                }}
-                              >
-                                {config.label}
-                              </span>
-                              <span
-                                style={{
-                                  fontSize: "0.8rem",
-                                  fontWeight: "600",
-                                  color: canAfford ? "#fdcb6e" : "#ff7675",
-                                }}
-                              >
-                                ${config.cost}
-                              </span>
-                            </button>
-                          );
-                        })}
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedSlot(null);
-                          }}
-                          onTouchEnd={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            setSelectedSlot(null);
-                          }} // IOS FIX
+                      ) : (
+                        <div
+                          onClick={(e) => e.stopPropagation()}
+                          onTouchEnd={(e) => e.stopPropagation()}
                           style={{
-                            gridColumn: "1 / -1",
-                            padding: "10px",
-                            marginTop: "auto",
-                            backgroundColor: "transparent",
-                            border: "1px solid #d63031",
-                            borderRadius: "6px",
-                            cursor: "pointer",
-                            fontWeight: "bold",
-                            color: "#ff7675",
-                            fontFamily: "inherit",
-                            transition: "all 0.2s",
+                            backgroundColor: "#2d3436",
+                            padding: "16px",
+                            borderRadius: "12px",
+                            boxShadow: "0 10px 20px rgba(0,0,0,0.5)",
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: "10px",
+                            border: "2px solid #00d2d3",
+                            color: "#fff",
+                            pointerEvents: "auto",
                           }}
                         >
-                          CANCEL
-                        </button>
-                      </div>
-                    )}
+                          <div
+                            className="h-orbitron"
+                            style={{
+                              textAlign: "center",
+                              fontSize: "1.1rem",
+                              fontWeight: "800",
+                              color: "#00d2d3",
+                              marginBottom: "4px",
+                            }}
+                          >
+                            CONSTRUCT
+                          </div>
+                          <div
+                            style={{
+                              display: "grid",
+                              gridTemplateColumns: "1fr 1fr",
+                              gap: "10px",
+                            }}
+                          >
+                            {(
+                              Object.entries(TOWER_DICTIONARY) as [
+                                TowerType,
+                                TowerConfig,
+                              ][]
+                            ).map(([type, config]) => {
+                              const canAfford =
+                                stateRef.current.money >= config.cost;
+                              return (
+                                <button
+                                  type="button"
+                                  key={type}
+                                  className="construct-btn"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    buildTower(type);
+                                  }}
+                                  onTouchEnd={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    buildTower(type);
+                                  }}
+                                  disabled={!canAfford}
+                                  style={{
+                                    padding: "10px 5px",
+                                    minHeight: "65px",
+                                    backgroundColor: canAfford
+                                      ? "#353b48"
+                                      : "#2d3436",
+                                    border: `1px solid ${canAfford ? config.color : "#636e72"}`,
+                                    borderRadius: "8px",
+                                    cursor: canAfford
+                                      ? "pointer"
+                                      : "not-allowed",
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    opacity: canAfford ? 1 : 0.4,
+                                    fontFamily: "inherit",
+                                  }}
+                                >
+                                  <div
+                                    style={{
+                                      width: "20px",
+                                      height: "20px",
+                                      backgroundColor: config.color,
+                                      borderRadius:
+                                        type === "goo" ? "50%" : "4px",
+                                      marginBottom: "8px",
+                                      boxShadow: `0 0 8px ${config.color}`,
+                                    }}
+                                  />
+                                  <span
+                                    style={{
+                                      fontSize: "0.8rem",
+                                      fontWeight: "800",
+                                      color: "#dfe6e9",
+                                      textTransform: "uppercase",
+                                    }}
+                                  >
+                                    {config.label}
+                                  </span>
+                                  <span
+                                    style={{
+                                      fontSize: "0.8rem",
+                                      fontWeight: "600",
+                                      color: canAfford ? "#fdcb6e" : "#ff7675",
+                                    }}
+                                  >
+                                    ${config.cost}
+                                  </span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                          <button
+                            className="construct-btn"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedSlot(null);
+                            }}
+                            onTouchEnd={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setSelectedSlot(null);
+                            }}
+                            style={{
+                              padding: "10px",
+                              backgroundColor: "transparent",
+                              border: "1px solid #d63031",
+                              borderRadius: "6px",
+                              cursor: "pointer",
+                              fontWeight: "bold",
+                              color: "#ff7675",
+                              fontFamily: "inherit",
+                            }}
+                          >
+                            CANCEL
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </foreignObject>
                 )}
               </svg>
